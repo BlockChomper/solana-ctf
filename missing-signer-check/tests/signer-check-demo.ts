@@ -59,9 +59,20 @@ describe('Missing Signer Check Demo', () => {
     );
     
     try {
-      // Try to send this with attacker signing instead of victim
+      // Get latest blockhash and set it on the transaction
+      const latestBlockhash = await provider.connection.getLatestBlockhash();
+      secureTransaction.recentBlockhash = latestBlockhash.blockhash;
+      secureTransaction.feePayer = attacker.publicKey;
+      
+      // Sign with attacker but try to spend from victim (should fail)
+      secureTransaction.sign(attacker);
+      
       // This should fail because the SystemProgram checks signatures
-      await provider.connection.sendTransaction(secureTransaction, [attacker]);
+      await provider.connection.sendRawTransaction(
+        secureTransaction.serialize(),
+        { skipPreflight: false }
+      );
+      
       console.log('❌ UNEXPECTED: Secure transaction succeeded!');
       expect.fail('Secure transaction should have failed');
     } catch (error) {
@@ -142,7 +153,7 @@ async function createDummyPDA(authority: PublicKey): Promise<PublicKey> {
   const dummyProgramId = new PublicKey('11111111111111111111111111111111');
   
   // Find a PDA using the victim's pubkey as seed
-  const [pda] = await PublicKey.findProgramAddress(
+  const [pda, _bump] = PublicKey.findProgramAddressSync(
     [authority.toBuffer()],
     dummyProgramId
   );
