@@ -26,7 +26,30 @@ pub struct WithdrawCtx<'info> {
     pub owner: UncheckedAccount<'info>,  // <-- VULNERABILITY HERE
 }
 ```
-Learn how to exploit and patch this vulnerability by completing the challenge.
+
+This vulnerability has led to millions of dollars in losses across various DeFi protocols. Learn how to exploit and patch this vulnerability by completing the challenge.
+
+### [Accidental Program Closure](./solana-program-close/)
+
+A devastating operational vulnerability where developers accidentally close their program during deployment, permanently locking user funds with no recovery mechanism.
+
+```rust
+// VULNERABLE: Any program holding user funds
+#[account]
+pub struct Vault {
+    pub owner: Pubkey,
+    pub vault_token_account: Pubkey,
+    pub total_deposited: u64,  // These tokens become inaccessible if program closes
+    pub is_active: bool,
+}
+
+// CRITICAL: If this function becomes unreachable, funds are lost forever
+pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+    // Withdrawal logic that becomes unreachable after program closure
+}
+```
+
+**Real-world example**: OptiFi lost $661,000 when developers accidentally ran `solana program close` on mainnet instead of devnet. Learn proper deployment safeguards and emergency procedures.
 
 ## Getting Started
 
