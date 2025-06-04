@@ -51,6 +51,32 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
 
 **Real-world example**: OptiFi lost $661,000 when developers accidentally ran `solana program close` on mainnet instead of devnet. Learn proper deployment safeguards and emergency procedures.
 
+### [Memory Safety Vulnerabilities](./memory-safety-vulns/memory-safety-vulns/)
+
+Educational demonstrations of memory safety vulnerabilities that can occur in Solana smart contracts, even with Rust's safety features. While Rust prevents most memory safety issues, vulnerabilities can still occur in unsafe code blocks and logical errors.
+
+```rust
+// VULNERABLE: Buffer overflow in unsafe code
+pub fn buffer_overflow_demo(ctx: Context<BufferOverflowDemo>, data: Vec<u8>) -> Result<()> {
+    let mut buffer = ctx.accounts.buffer_account.load_mut()?;
+    
+    if data.len() > 64 {
+        return Err(ErrorCode::BufferOverflow.into());
+    }
+    
+    unsafe {
+        let dest_ptr = buffer.data.as_mut_ptr();
+        let src_ptr = data.as_ptr();
+        // Potential memory corruption if bounds not properly checked
+        ptr::copy_nonoverlapping(src_ptr, dest_ptr, data.len());
+    }
+    
+    Ok(())
+}
+```
+
+This challenge covers buffer overflows, use-after-free scenarios, uninitialized memory access, double-free conditions, and null pointer dereferences. Learn how these vulnerabilities manifest in blockchain contexts and how to prevent them.
+
 ## Getting Started
 
 Each challenge directory contains its own README with specific instructions. Generally, you'll need:
